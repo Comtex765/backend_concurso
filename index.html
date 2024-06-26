@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"></meta>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    ></meta>
+
+    <title>Country, State, City Selector</title>
+</head>
+
+<body>
+    <label for="countries">Choose a country:</label>
+
+    <select id="countries">
+        <option
+            value="value"
+            disabled="disabled"
+            selected="selected"
+        >Select a country</option>
+    </select>
+
+    <label for="states">Choose a state:</label>
+
+    <select
+        id="states"
+        disabled="disabled"
+    >
+        <option
+            value="value"
+            disabled="disabled"
+            selected="selected"
+        >Select a state</option>
+    </select>
+
+    <label for="cities">Choose a city:</label>
+
+    <select
+        id="cities"
+        disabled="disabled"
+    >
+        <option
+            value="value"
+            disabled="disabled"
+            selected="selected"
+        >Select a city</option>
+    </select>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const countriesSelect = document.getElementById('countries');
+            const statesSelect = document.getElementById('states');
+            const citiesSelect = document.getElementById('cities');
+
+            fetch("http://127.0.0.1:8000/countries")
+                .then(response => response.json())
+                .then(countries => {
+                    countries.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.id_pais;
+                        option.textContent = country.nombre_pais;
+                        countriesSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching countries:', error));
+
+            countriesSelect.addEventListener('change', (event) => {
+                const countryId = event.target.value;
+                statesSelect.disabled = false;
+                statesSelect.innerHTML = '<option value="" disabled selected>Select a state</option>';
+
+                fetch(`http://127.0.0.1:8000/countries/${countryId}/states`)
+                    .then(response => response.json())
+                    .then(country => {
+                        country.estados.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.id_estado;
+                            option.textContent = state.nombre_estado;
+                            statesSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching states:', error));
+            });
+
+            statesSelect.addEventListener('change', (event) => {
+                const stateId = event.target.value;
+                citiesSelect.disabled = false;
+                citiesSelect.innerHTML = '<option value="" disabled selected>Select a city</option>';
+
+                fetch(`http://127.0.0.1:8000/states/${stateId}/cities`)
+                    .then(response => response.json())
+                    .then(state => {
+                        state.ciudades.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city.id_ciudad;
+                            option.textContent = city.nombre_ciudad;
+                            citiesSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching cities:', error));
+            });
+        });
+    </script>
+</body>
+</html>
